@@ -28,7 +28,7 @@ const m = document.getElementById('m');
   if (DIL === 'tr') {
     const { data: ids } = await sb.rpc('gundem_ids', { p_bolum: null, p_adet: 90 });
     const liste = (ids || []).map(e => typeof e === 'object' ? Object.values(e)[0] : e);
-    if (liste.length) { const { data } = await sb.from('articles').select(SELECT).eq('status','published').in('id', liste); rows = data || []; }
+    if (liste.length) { const { data } = await sb.from('articles').select(SELECT).eq('status','published').eq('dil','tr').in('id', liste); rows = data || []; }
   } else {
     const { data } = await sb.from('articles').select(SELECT).eq('status','published').eq('dil', DIL).order('published_at', { ascending: false }).limit(60);
     rows = data || [];
