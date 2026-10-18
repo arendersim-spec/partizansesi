@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Partizan Sesi</title>
+<meta name="description" content="Sol ve sosyalist basından değerlendirme yazıları ve gündem.">
+<meta property="og:site_name" content="Partizan Sesi">
+<meta property="og:title" content="Partizan Sesi">
+<meta property="og:description" content="Sol ve sosyalist basından değerlendirme yazıları ve gündem.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="ortak.js"></script>
+</head>
+<body>
+<header id="ust"></header>
+<main id="m"><div class="uyari">…</div></main>
+<footer id="alt"></footer>
+<script>
+ustKisim('');
+const m = document.getElementById('m');
+(async () => {
+  const id = qp.get('id');
+  const yok = () => m.innerHTML = `<div class="uyari">${t('Yazı bulunamadı ya da yayından kaldırılmış.')}</div>`;
+  if (!id) return yok();
+  const { data: a } = await sb.from('articles').select(SELECT).eq('id', id).eq('status','published').maybeSingle();
+  if (!a) return yok();
+  let yazar = '';
+  if (a.yazar_id) { const { data: y } = await sb.from('yazarlar').select('name').eq('id', a.yazar_id).maybeSingle(); yazar = y?.name || ''; }
+  const src = a.article_sources?.[0] || {};
+  let govde = String(a.body || '').trim(), ozet = String(a.excerpt || '').trim();
+  if (ozet && govde.startsWith(ozet) && govde.slice(ozet.length).trim()) govde = govde.slice(ozet.length).trim();
+  const ozt = ozetBasliksiz(a.title, ozet), so = sade(ozt), sm = sade(govde);
+  const ozetGoster = so.length >= 40 && !sm.startsWith(so.slice(0, Math.min(so.length - 5, 160)));
+  const bolum = a.categories?.name && a.categories.name !== 'YAZARLAR' ? a.categories.name : '';
+  document.title = a.title + ' – Partizan Sesi';
+  const paras = govde.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+    .map(p => '<p>' + esc(p).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>') + '</p>').join('');
+  m.innerHTML = `<article class="yazi">
+    ${a.media?.public_url ? `<img class="kapak" src="${esc(a.media.public_url)}" alt="">` : ''}
+    ${bolum ? `<div class="bolum">${esc(t(bolum))}</div>` : '<div style="height:22px"></div>'}
+    <h1>${esc(a.title)}</h1>
+    <div class="meta">${esc(yazar || kaynakAdi(a))} · ${tarih(a.published_at)}</div>
+    ${ozetGoster ? `<div class="giris">${esc(ozt)}</div>` : ''}
+    <div class="metin">${paras}</div>
+    ${src.source_url ? `<div class="kaynak">${t('Kaynak')}: <a href="${esc(src.source_url)}" rel="noopener">${esc(kaynakAdi(a))} ↗</a></div>` : ''}</article>`;
+})();
+</script></body></html>
