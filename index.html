@@ -46,7 +46,7 @@ const m = document.getElementById('m');
       yz.liste.map(y => `<a class="yazar" href="yazarlar.html?y=${y.id}"><div class="yuz">${y.photo_url ? `<img src="${esc(y.photo_url)}" alt="">` : esc(y.name.split(' ').map(p => p[0]).slice(0,2).join(''))}</div>${esc(y.name)}</a>`).join('') + '</div>';
   }
   for (const b of SIRA) {
-    const list = rows.filter(r => bol(r) === b && r.id !== one.id).slice(0, 3);
+    const list = rows.filter(r => bol(r) === b && r.id !== one.id).slice(0, 4);
     if (!list.length) continue;
     h += `<div class="baslik"><h2>${esc(t(b))}</h2><a href="bolum.html?b=${encodeURIComponent(b)}">${t('TÜMÜ →')}</a></div><div class="izgara">${list.map(a => kart(a, yz.ad)).join('')}</div>`;
   }
