@@ -33,7 +33,10 @@ const m = document.getElementById('m');
   let govde = String(a.body || '').trim(), ozet = String(a.excerpt || '').trim();
   if (ozet && govde.startsWith(ozet) && govde.slice(ozet.length).trim()) govde = govde.slice(ozet.length).trim();
   const ozt = ozetBasliksiz(a.title, ozet), so = sade(ozt), sm = sade(govde);
-  const ozetGoster = so.length >= 40 && !sm.startsWith(so.slice(0, Math.min(so.length - 5, 160)));
+  const kel = x => String(x || '').toLocaleLowerCase('tr').split(/[^a-z0-9\u00c0-\u024f]+/).filter(w => w.length >= 4).map(w => w.slice(0, 5));
+  const ok = kel(ozt), bas = new Set(kel(govde).slice(0, Math.max(20, Math.min(120, ok.length * 2))));
+  const benzer = ok.length >= 6 && ok.filter(w => bas.has(w)).length / ok.length >= 0.55;
+  const ozetGoster = so.length >= 40 && !benzer && !sm.startsWith(so.slice(0, Math.min(so.length - 5, 160)));
   const bolum = a.categories?.name && a.categories.name !== 'YAZARLAR' ? a.categories.name : '';
   document.title = a.title + ' – Partizan Sesi';
   const paras = govde.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
