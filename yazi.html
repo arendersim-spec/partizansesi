@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="stil.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="ortak.js"></script>
+<style>.metin h2.ara{font-size:23px;margin:34px 0 8px}.metin h3.alt{font:900 13px -apple-system,Arial,sans-serif;letter-spacing:1.2px;color:var(--kirmizi);text-transform:uppercase;margin:28px 0 6px}.metin blockquote{border-left:3px solid var(--kirmizi);margin:18px 0;padding-left:14px;font-style:italic;opacity:.85}.metin ul{padding-left:22px}.metin .ayrac{text-align:center;letter-spacing:6px;opacity:.6}</style>
 </head>
 <body>
 <header id="ust"></header>
@@ -39,8 +40,21 @@ const m = document.getElementById('m');
   const ozetGoster = so.length >= 40 && !benzer && !sm.startsWith(so.slice(0, Math.min(so.length - 5, 160)));
   const bolum = a.categories?.name && a.categories.name !== 'YAZARLAR' ? a.categories.name : '';
   document.title = a.title + ' – Partizan Sesi';
-  const paras = govde.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
-    .map(p => '<p>' + esc(p).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>') + '</p>').join('');
+  const satirIci = x => esc(x)
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>')
+    .replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^\w*])\*([^*\s](?:[^*\n]*?[^*\s])?)\*(?![\w*])/g, '$1<em>$2</em>')
+    .replace(/\n/g, '<br>');
+  function bicimle(b) {
+    const s = b.split('\n');
+    if (b.startsWith('## ')) return '<h2 class="ara">' + esc(b.slice(3)) + '</h2>';
+    if (b.startsWith('### ')) return '<h3 class="alt">' + esc(b.slice(4)) + '</h3>';
+    if (s.every(x => x.startsWith('>'))) return '<blockquote>' + satirIci(s.map(x => x.replace(/^>\s?/, '')).join('\n')) + '</blockquote>';
+    if (s.every(x => x.startsWith('• '))) return '<ul>' + s.map(x => '<li>' + satirIci(x.slice(2)) + '</li>').join('') + '</ul>';
+    if (/^(\*\s*){3,}$/.test(b)) return '<p class="ayrac">* * *</p>';
+    return '<p>' + satirIci(b) + '</p>';
+  }
+  const paras = govde.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(bicimle).join('');
   m.innerHTML = `<article class="yazi">
     ${a.media?.public_url ? `<img class="kapak" src="${esc(a.media.public_url)}" alt="">` : ''}
     ${bolum ? `<div class="bolum">${esc(t(bolum))}</div>` : '<div style="height:22px"></div>'}
