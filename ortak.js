@@ -43,7 +43,10 @@ function kart(a, yazarlar) {
 }
 async function yazarAdlari() {
   const { data } = await sb.from('yazarlar').select('id,name,photo_url,sort_order').order('sort_order').order('name');
-  const m = {}; (data || []).forEach(y => m[y.id] = y.name); return { liste: data || [], ad: m };
+  const m = {}; (data || []).forEach(y => m[y.id] = y.name);
+  const { data: say } = await sb.from('articles').select('yazar_id').eq('status', 'published').eq('dil', DIL).not('yazar_id', 'is', null).limit(5000);
+  const yazisiOlan = new Set((say || []).map(x => x.yazar_id));
+  return { liste: (data || []).filter(y => yazisiOlan.has(y.id)), ad: m };
 }
 function ustKisim(aktif) {
   const sekme = (h, ad, k) => `<a href="${h}" class="${aktif === k ? 'on' : ''}">${t(ad)}</a>`;
